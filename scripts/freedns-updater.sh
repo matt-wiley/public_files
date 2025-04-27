@@ -2,12 +2,9 @@
 # FreeDNS Update Script (BusyBox compatible)
 # This script detects your current public IP address and updates FreeDNS
 
-# Log file location
-LOG_FILE="/var/log/ddns-update.log"
-
 # Function to log messages
 log_message() {
-  echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> $LOG_FILE
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
 
 # Get current public IP address (using multiple services for redundancy)
