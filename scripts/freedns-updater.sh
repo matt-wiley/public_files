@@ -10,7 +10,7 @@ log_message() {
 # Get current public IP address (using multiple services for redundancy)
 get_public_ip() {
   # Try multiple IP detection services in case one is down
-  IP=$(wget -qO- https://api.ipify.org || wget -qO- https://ifconfig.me || wget -qO- https://icanhazip.com)
+  IP=$(wget --no-check-certificate -qO- https://api.ipify.org || wget --no-check-certificate -qO- https://ifconfig.me || wget --no-check-certificate -qO- https://icanhazip.com)
 
   if [ -z "$IP" ]; then
     log_message "ERROR: Could not determine public IP address"
