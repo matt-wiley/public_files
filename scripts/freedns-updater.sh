@@ -2,6 +2,10 @@
 # FreeDNS Update Script (BusyBox compatible)
 # This script detects your current public IP address and updates FreeDNS
 
+CURRENT_IP_FILE="/tmp/current_ip.txt"
+LAST_IP_FILE="/tmp/last_ip.txt"
+
+
 # Function to log messages
 log_message() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
@@ -10,22 +14,20 @@ log_message() {
 # Get current public IP address (using multiple services for redundancy)
 get_public_ip() {
   # Try multiple IP detection services in case one is down
-  IP=$(wget --no-check-certificate -qO- https://api.ipify.org || wget --no-check-certificate -qO- https://ifconfig.me || wget --no-check-certificate -qO- https://icanhazip.com)
+  IP=$(wget -qO- https://api.ipify.org || wget -qO- https://ifconfig.me || wget -qO- https://icanhazip.com)
 
   if [ -z "$IP" ]; then
     log_message "ERROR: Could not determine public IP address"
     exit 1
   else
     log_message "Current public IP: $IP"
-    echo $IP
+    echo "$IP" > $CURRENT_IP_FILE
   fi
 }
 
-# Save the last known IP to avoid unnecessary updates
-LAST_IP_FILE="/tmp/last_ip.txt"
-CURRENT_IP=$(get_public_ip)
-
 # Check if the IP has changed since last update
+CURRENT_IP=$(cat "$CURRENT_IP_FILE")
+
 if [ -f "$LAST_IP_FILE" ]; then
   LAST_IP=$(cat "$LAST_IP_FILE")
   if [ "$CURRENT_IP" = "$LAST_IP" ]; then
@@ -35,7 +37,7 @@ if [ -f "$LAST_IP_FILE" ]; then
 fi
 
 # Save current IP for next run
-echo "$CURRENT_IP" > "$LAST_IP_FILE"
+mv -f $CURRENT_IP_FILE $LAST_IP_FILE
 
 # Get the update URL from environment variable
 FREEDNS_UPDATE_URL=${FREEDNS_UPDATE_URL:-""}
