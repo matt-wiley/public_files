@@ -4,8 +4,8 @@
 
 set -euo pipefail
 
-CURRENT_IP_FILE="/tmp/current_ip.txt"
-LAST_IP_FILE="/tmp/last_ip.txt"
+MOST_RECENT_IP_FILE="/tmp/ip0.txt"
+PRIOR_IP_FILE="/tmp/ip1.txt"
 
 
 # Function to log messages
@@ -23,15 +23,15 @@ get_public_ip() {
     exit 1
   else
     log_message "Current public IP: $IP"
-    echo "$IP" > $CURRENT_IP_FILE
+    echo "$IP" > $MOST_RECENT_IP_FILE
   fi
 }
 get_public_ip
 
 # Check if the IP has changed since last update
-CURRENT_IP=$(cat "$CURRENT_IP_FILE")
-if [ -f "$LAST_IP_FILE" ]; then
-  LAST_IP=$(cat "$LAST_IP_FILE")
+CURRENT_IP=$(cat "$MOST_RECENT_IP_FILE")
+if [ -f "$PRIOR_IP_FILE" ]; then
+  LAST_IP=$(cat "$PRIOR_IP_FILE")
   if [ "$CURRENT_IP" = "$LAST_IP" ]; then
     log_message "IP unchanged ($CURRENT_IP). No update needed."
     exit 0
@@ -39,8 +39,7 @@ if [ -f "$LAST_IP_FILE" ]; then
 fi
 
 # Save current IP for next run
-rm -f $LAST_IP_FILE
-mv $CURRENT_IP_FILE $LAST_IP_FILE
+cat "$MOST_RECENT_IP_FILE" > "$PRIOR_IP_FILE"
 
 # Get the update URL from environment variable
 FREEDNS_UPDATE_URL=${FREEDNS_UPDATE_URL:-""}
