@@ -2,6 +2,8 @@
 # FreeDNS Update Script (BusyBox compatible)
 # This script detects your current public IP address and updates FreeDNS
 
+set -euo pipefail
+
 CURRENT_IP_FILE="/tmp/current_ip.txt"
 LAST_IP_FILE="/tmp/last_ip.txt"
 
@@ -24,10 +26,10 @@ get_public_ip() {
     echo "$IP" > $CURRENT_IP_FILE
   fi
 }
+get_public_ip
 
 # Check if the IP has changed since last update
 CURRENT_IP=$(cat "$CURRENT_IP_FILE")
-
 if [ -f "$LAST_IP_FILE" ]; then
   LAST_IP=$(cat "$LAST_IP_FILE")
   if [ "$CURRENT_IP" = "$LAST_IP" ]; then
@@ -37,7 +39,8 @@ if [ -f "$LAST_IP_FILE" ]; then
 fi
 
 # Save current IP for next run
-mv -f $CURRENT_IP_FILE $LAST_IP_FILE
+rm -f $LAST_IP_FILE
+mv $CURRENT_IP_FILE $LAST_IP_FILE
 
 # Get the update URL from environment variable
 FREEDNS_UPDATE_URL=${FREEDNS_UPDATE_URL:-""}
